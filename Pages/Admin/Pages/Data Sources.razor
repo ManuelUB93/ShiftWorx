@@ -1,0 +1,339 @@
+﻿@page "/Admin/DataSources/{CompanyId}"
+@using ShiftWorx.Components.Modals
+@layout AdminLayout
+@inject ApplicationDbContext dbContext
+@inject AuthenticationStateProvider Auth
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+<MudAppBar Color="Color.Primary" Fixed="false" Dense="true">
+    <MudText Typo="Typo.h5">Data Sources</MudText>
+</MudAppBar>
+<div class="d-flex flex-row" style="height: 94%;">
+    <div class="d-block">
+        <MudPaper Width="400px" Class="overflow-y-scroll" Height="100%" Elevation="0">
+            <AuthorizeView Roles="SysAdmin">
+                <MudSelect ValueChanged="@((int CompanyID)=>SelectedValueChanged(CompanyID))" Class="ma-3" Label="Select a Company" AnchorOrigin="Origin.BottomCenter">
+                    @foreach (var _company in SelectCompanies)
+                    {
+                        <MudSelectItem Value="_company.Id">@_company.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </AuthorizeView>
+            <MudList Clickable="true" @bind-SelectedValue="selectedValue" Class="pa-3">
+                <MudListSubheader>
+                    Data Sources
+                </MudListSubheader>
+                @foreach (var _Company in Companies)
+                {
+                    <MudListItem ExpandedChanged="() => selectedValue = _Company" Icon="@Icons.Filled.Warehouse" InitiallyExpanded="true">
+                        <ChildContent>
+                            <MudElement Class="d-flex justify-space-between align-center">
+                                <MudText>@(_Company.Name)</MudText>
+                                <MudElement Class="d-flex">
+                                    <MudIconButton Class="pa-2" OnClick="() => CreateFactory(_Company)" Icon="@Icons.Filled.Add"></MudIconButton>
+                                </MudElement>
+                            </MudElement>
+                        </ChildContent>
+                        <NestedList>
+                            @foreach (var _Factory in _Company.Factories)
+                            {
+                                <MudListItem ExpandedChanged="() => selectedValue = _Factory" Icon="@Icons.Filled.Factory">
+                                    <ChildContent>
+                                        <MudElement Class="d-flex justify-space-between align-center">
+                                            <MudText>@(_Factory.Name)</MudText>
+                                            <MudElement Class="d-flex">
+                                                <MudIconButton Class="pa-2" OnClick="() => CreateMachine(_Factory)" Icon="@Icons.Filled.Add"></MudIconButton>
+                                                <MudIconButton Class="pa-2" OnClick="() => Delete(_Factory)" Icon="@Icons.Filled.Delete"></MudIconButton>
+                                            </MudElement>
+                                        </MudElement>
+                                    </ChildContent>
+                                    <NestedList>
+                                        @foreach (var _Machine in _Factory.Machines)
+                                        {
+                                            <MudListItem ExpandedChanged="() => selectedValue = _Machine" Icon="@Icons.Filled.Laptop">
+                                                <ChildContent>
+                                                    <MudElement Class="d-flex justify-space-between align-center">
+                                                        <MudText>@(_Machine.Name)</MudText>
+                                                        <MudElement Class="d-flex">
+                                                            <MudIconButton Class="pa-2" OnClick="() => CreateCollector(_Machine)" Icon="@Icons.Filled.Add"></MudIconButton>
+                                                            <MudIconButton Class="pa-2" OnClick="() => Delete(_Machine)" Icon="@Icons.Filled.Delete"></MudIconButton>
+                                                        </MudElement>
+                                                    </MudElement>
+                                                </ChildContent>
+                                                <NestedList>
+                                                    @foreach (var _Collector in _Machine.Collectors)
+                                                    {
+                                                        <MudListItem Value="_Collector" Icon="@Icons.Filled.Sensors">
+                                                            <ChildContent>
+                                                                <MudElement Class="d-flex justify-space-between align-center">
+                                                                    <MudText>@(_Collector.Name)</MudText>
+                                                                    <MudElement Class="d-flex">
+                                                                        <MudIconButton Class="pa-2" OnClick="() => Delete(_Collector)" Icon="@Icons.Filled.Delete"></MudIconButton>
+                                                                    </MudElement>
+                                                                </MudElement>
+                                                            </ChildContent>
+                                                        </MudListItem>
+                                                    }
+                                                </NestedList>
+                                            </MudListItem>
+                                        }
+                                    </NestedList>
+                                </MudListItem>
+                            }
+                        </NestedList>
+                    </MudListItem>
+                }
+            </MudList>
+        </MudPaper>
+    </div>
+
+    <div class="pa-4 ma-2 flex-grow-1 ">
+        @if (selectedValue != null)
+        {
+            if (selectedValue is Models.Company)
+            {
+                var Company = selectedValue as Models.Company;
+                <div class="d-flex align-center justify-end mt-16">
+                    <MudButton OnClick="() => DefineWork(Company)" Variant="Variant.Filled" Color="Color.Primary">Define Work</MudButton>
+                </div>
+                <MudForm Class="px-8 pb-6 mt-16">
+                    <MudTextField Class="my-8" T="string" Value="Company.Name" Disabled="true" Label="Name" />
+                    <MudTextField Class="my-8" T="string" Value="Company.GetType().ToString()" Disabled="true" Label="Data Source Type" />
+                    <MudTextField Class="my-8" T="int" Value="Company.fp_core_Id" ReadOnly="true" Label="Data Source ID" />
+                    <MudTextField Class="my-8" T="DateTime" Value="Company.CreatedAt" Disabled="true" Label="Created At" />
+                    <MudTextField Class="my-8" T="DateTime" Value="Company.UpdatedAt" Disabled="true" Label="Updated At" />
+                    <div class="d-flex align-center justify-end mt-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Update</MudButton>
+                    </div>
+                </MudForm>
+            }
+            if (selectedValue is Models.Collector)
+            {
+                var Collector = selectedValue as Models.Collector;
+                <div class="d-flex align-center justify-end mt-16">
+                </div>
+                <MudForm Class="px-8 pb-6 mt-16">
+                    <MudTextField Class="my-8" T="string" Value="Collector.Name" Disabled="true" Label="Name" />
+                    <MudTextField Class="my-8" T="string" Value="Collector.GetType().ToString()" Disabled="true" Label="Data Source Type" />
+                    <MudTextField Class="my-8" T="int" Value="Collector.fp_data_source_Id" ReadOnly="true" Label="Data Source ID" />
+                    <MudTextField Class="my-8" T="DateTime" Value="Collector.UpdatedAt" Disabled="true" Label="Created At" />
+                    <MudTextField Class="my-8" T="DateTime" Value="Collector.UpdatedAt" Disabled="true" Label="Updated At" />
+                    <div class="d-flex align-center justify-end mt-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Update</MudButton>
+                    </div>
+                </MudForm>
+            }
+            if (selectedValue is Models.Factory)
+            {
+                var Factory = selectedValue as Models.Factory;
+                <div class="d-flex align-center justify-end mb-8 mt-16">
+                    <MudButton OnClick="() => DefineWork(Factory)" Variant="Variant.Filled" Color="Color.Primary">Define Work</MudButton>
+                </div>
+                <MudForm Class="px-8 pb-6 mt-16">
+                    <MudTextField Class="my-8" T="string" Value="Factory.Name" Disabled="true" Label="Name" />
+                    <MudTextField Class="my-8" T="string" Value="Factory.GetType().ToString()" Disabled="true" Label="Data Source Type" />
+                    <MudTextField Class="my-8" T="int" Value="Factory.fp_core_Id" ReadOnly="true" Label="Data Source ID" />
+                    <MudTextField Class="my-8" T="DateTime" Value="Factory.UpdatedAt" Disabled="true" Label="Created At" />
+                    <MudTextField Class="my-8" T="DateTime" Value="Factory.UpdatedAt" Disabled="true" Label="Updated At" />
+                    <div class="d-flex align-center justify-end mt-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Update</MudButton>
+                    </div>
+                </MudForm>
+            }
+            if (selectedValue is Models.Machine)
+            {
+                var Machine = selectedValue as Models.Machine;
+                <div class="d-flex align-center justify-end mt-16">
+                </div>
+                <MudForm Class="px-8 pb-6 mt-16">
+                    <MudTextField Class="my-8" T="string" Value="Machine.Name" Disabled="true" Label="Name" />
+                    <MudTextField Class="my-8" T="string" Value="Machine.GetType().ToString()" Disabled="true" Label="Data Source Type" />
+                    <MudTextField Class="my-8" T="int" Value="Machine.fp_core_Id" ReadOnly="true" Label="Data Source ID" />
+                    <MudTextField Class="my-8" T="DateTime" Value="Machine.UpdatedAt" Disabled="true" Label="Created At" />
+                    <MudTextField Class="my-8" T="DateTime" Value="Machine.UpdatedAt" Disabled="true" Label="Updated At" />
+                    <div class="d-flex align-center justify-end mt-4">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Update</MudButton>
+                    </div>
+                </MudForm>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string CompanyId { get; set; }
+    List<Models.Company> Companies = new();
+    List<Models.Company> SelectCompanies = new();
+    private MudListItem selectedItem;
+    private object selectedValue;
+    private bool mExpanded;
+    private bool cExpanded;
+    private bool fExpanded;
+
+    protected override void OnInitialized()
+    {
+        var Authstate = Auth.GetAuthenticationStateAsync();
+        var user = Authstate.Result.User;
+        var roleIn = user.Claims.Where(a => a.Type == "role").Select(c => c.Value).SingleOrDefault();
+        var userid = user.Claims.Where(a => a.Type == "nameid").Select(c => c.Value).SingleOrDefault();
+        var identities = dbContext.Users.Include(a=>a.Company).Where(p => p.Id == userid).FirstOrDefault();
+        if (roleIn.ToLower().Contains("administrator"))
+        {
+            Companies = dbContext.Company.Include(a => a.Factories).ThenInclude(a => a.Machines).ThenInclude(a => a.Collectors).Where(a => a.Id == identities.Company.Id).OrderBy(a => a.Name).ToList();
+        }
+        else
+        {
+            SelectCompanies = dbContext.Company.OrderBy(a => a.Name).ToList();
+        }
+
+    }
+    public void SelectedValueChanged(int CompanyId)
+    {
+        Companies = dbContext.Company.Include(a => a.Factories).ThenInclude(a => a.Machines).ThenInclude(a => a.Collectors).Where(a => a.Id == CompanyId).ToList();
+        StateHasChanged();
+    }
+    private async void CreateFactory(Models.Company company)
+    {
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                CloseButton = true,
+                Position = DialogPosition.Center,
+                DisableBackdropClick = true,
+                FullWidth = true,
+                MaxWidth = MaxWidth.Medium
+            };
+        DialogParameters parameters = new();
+        parameters.Add("Company", company);
+        var dialogresult = await DialogService.Show<AddFactoryModal>("Add a new Factory", parameters, options).Result;
+        if (!dialogresult.Cancelled)
+        {
+            if ((bool)dialogresult.Data == true)
+            {
+                Snackbar.Add("Factory Added Succesfully", Severity.Success, config =>
+               {
+                   config.ShowCloseIcon = true;
+               });
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async void CreateMachine(Factory factory)
+    {
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                CloseButton = true,
+                Position = DialogPosition.Center,
+                DisableBackdropClick = true,
+                FullWidth = true,
+                MaxWidth = MaxWidth.Small
+            };
+        DialogParameters parameters = new();
+        parameters.Add("factory", factory);
+        var dialogresult = await DialogService.Show<AddMachineModal>("Add a new Machine", parameters, options).Result;
+        if (!dialogresult.Cancelled)
+        {
+            if ((bool)dialogresult.Data == true)
+            {
+                Snackbar.Add("Machine Added Succesfully", Severity.Success, config =>
+               {
+                   config.ShowCloseIcon = true;
+               });
+                StateHasChanged();
+            }
+        }
+    }
+    private async void CreateCollector(Machine machine)
+    {
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                CloseButton = true,
+                Position = DialogPosition.Center,
+                DisableBackdropClick = true,
+                FullWidth = true,
+                MaxWidth = MaxWidth.Small
+            };
+        DialogParameters parameters = new();
+        parameters.Add("machine", machine);
+        var dialogresult = await DialogService.Show<AddCollectorModal>("Add a new Collector", parameters, options).Result;
+        if (!dialogresult.Cancelled)
+        {
+            if ((bool)dialogresult.Data == true)
+            {
+                Snackbar.Add("Collector Added Succesfully", Severity.Success, config =>
+               {
+                   config.ShowCloseIcon = true;
+               });
+                StateHasChanged();
+            }
+        }
+
+    }
+    private async void DefineWork(object obj)
+    {
+        var options = new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                CloseButton = true,
+                Position = DialogPosition.Center,
+                DisableBackdropClick = true,
+                FullWidth = true,
+                MaxWidth = MaxWidth.Small
+            };
+        DialogParameters parameters = new();
+        parameters.Add("Obj", obj);
+        var dialogresult = await DialogService.Show<DefineWorkModal>("Work Definition", parameters, options).Result;
+        if (!dialogresult.Cancelled)
+        {
+            if ((bool)dialogresult.Data == true)
+            {
+                Snackbar.Add("Work Defined Succesfully", Severity.Success, config =>
+               {
+                   config.ShowCloseIcon = true;
+               });
+                StateHasChanged();
+            }
+        }
+
+    }
+
+    private async void Delete(object obj)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+        "Warning",
+        "Deleting can not be undone!",
+        yesText: "Delete!", cancelText: "Cancel");
+        if (result == true)
+        {
+            if (obj.GetType() == typeof(Factory))
+            {
+                var factory = (Factory)obj;
+                factory.Company.Factories.Remove(factory);
+                dbContext.Company.Update(factory.Company);
+                dbContext.SaveChanges();
+                Snackbar.Add("Deleted Factory Succesfully", Severity.Success, config => { config.ShowCloseIcon = true; });
+            }
+            if (obj.GetType() == typeof(Machine))
+            {
+                var machine = (Machine)obj;
+                machine.Factory.Machines.Remove(machine);
+                dbContext.Factory.Update(machine.Factory);
+                dbContext.SaveChanges();
+                Snackbar.Add("Deleted Machine Succesfully", Severity.Success, config => { config.ShowCloseIcon = true; });
+            }
+            if (obj.GetType() == typeof(Collector))
+            {
+                var collector = (Collector)obj;
+                collector.Machine.Collectors.Remove(collector);
+                dbContext.Machine.Update(collector.Machine);
+                dbContext.SaveChanges();
+                Snackbar.Add("Deleted Collector Succesfully", Severity.Success, config => { config.ShowCloseIcon = true; });
+            }
+        }
+        StateHasChanged();
+    }
+}

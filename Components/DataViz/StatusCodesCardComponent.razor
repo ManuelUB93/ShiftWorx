@@ -1,0 +1,44 @@
+﻿@using ShiftWorx.Components.Methods
+@using ShiftWorx.Components.Responses
+@inject FpData _context;
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudToolBar DisableGutters="true">
+                <MudText Typo="Typo.h6">Status Codes</MudText>
+                <MudSpacer />
+                <MudButton OnClick="GetRunningStatusCodes" Variant="Variant.Filled" Color="MudBlazor.Color.Primary">Change</MudButton>
+            </MudToolBar>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @foreach (var item in RunningStatusCodes.data)
+        {
+            <StatusCodeTimeCounter Parent=this JobId="@item.id.ToString()" Description="@item.lineage" AttachedTime="@item.attached_at" Name="@item.name"></StatusCodeTimeCounter>
+        }
+    </MudCardContent>
+</MudCard>
+@code {
+    RunningStatusCodesResponse  RunningStatusCodes;
+    public void GetRunningStatusCodes()
+    {
+        StateHasChanged();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        GetRunningStatusCodes();
+    }
+    public void RefreshState()
+    {
+        GetRunningStatusCodes();
+    }
+
+}
+
+
+
+
+
+
+
+

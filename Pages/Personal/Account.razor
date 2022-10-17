@@ -1,0 +1,92 @@
+﻿@page "/personal/account"
+@attribute [Authorize]
+@inject ISnackbar Snackbar
+@inject ApplicationDbContext dbContext
+@inject AuthenticationStateProvider authStateProvider
+@inject UserManager<User> userManager
+@inject RoleManager<IdentityRole> roleManager
+@layout MainLayout
+<PageTitle>Profile</PageTitle>
+<MudText Typo="Typo.h5" Class="mb-4">Account</MudText>
+<AuthorizeView>
+    <Authorized>
+        <MudPaper Class="ma-5">
+            <MudTabs Elevation="1" Rounded="true" PanelClass="mt-6">
+                <MudTabPanel Text="General">
+                    <MudGrid Class="pa-7">
+                        <MudItem xs="12" sm="4" md="3">
+                            <MudText Align="Align.Center">Public Profile</MudText>
+                            <div class="d-flex justify-center my-4">
+                                <MudAvatar Image="https://placeimg.com/128/128/people" Style="height:100px; width:100px;">
+                                </MudAvatar>
+                            </div>
+                            <MudText Align="MudBlazor.Align.Center">@context.User.Identity?.Name</MudText>
+                            <MudText Align="MudBlazor.Align.Center">@context.User.Claims.Where(a => a.Type == "role").Select(c=>c.Value).SingleOrDefault()</MudText>
+
+                        </MudItem>
+                        <MudItem xs="12" sm="8" md="9">
+                            <MudText>Profile Details</MudText>
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField Value="@context.User.Identity?.Name" Label="First Name" Variant="Variant.Text" HelperText="Read Only" ReadOnly="true" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudTextField ReadOnly="true" Value="@context.User.Claims.Where(a => a.Type == "email").Select(c=>c.Value).SingleOrDefault()" Label="Email" Variant="Variant.Text" HelperText="Read Only" InputType="InputType.Email" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect @bind-Value="Role" Label="Select a Role" AnchorOrigin="Origin.BottomCenter">
+                                        @foreach (var role in RoleList)
+                                        {
+                                            <MudSelectItem Value="role">@role.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                                @if (Role is not null)
+                                {
+                                    @if (Role.Name == "Administrator" || Role.Name == "User")
+                                    {
+                                        <MudItem xs="12" md="6">
+                                            <MudAutocomplete Clearable="true" MaxItems="null" T="Company" ToStringFunc="@(e=> e==null?null : $"{e.Name}")" Label="Companies" @bind-Value="Company" SearchFunc="@Search" ResetValueOnEmptyText="true"/>
+                                        </MudItem>
+                                    }
+                                }
+                            </MudGrid>
+                            <div class="d-flex justify-end mt-4">
+                                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-auto" @onclick="@(() => SaveChanges("Profile details saved", Severity.Success))">Save Changes</MudButton>
+                            </div>
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+            </MudTabs>
+        </MudPaper>
+
+    </Authorized>
+</AuthorizeView>
+
+
+@code {
+    public List<IdentityRole> RoleList { get; set; }
+    public List<Company> CompanyList { get; set; }
+    public IdentityRole Role { get; set; }
+    public Company Company { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await authStateProvider.GetAuthenticationStateAsync();
+        RoleList = roleManager.Roles.OrderBy(a => a.Name).ToList();
+        CompanyList = dbContext.Company.OrderBy(a => a.Name).ToList();
+    }
+    void SaveChanges(string message, Severity severity)
+    {
+
+        Snackbar.Add(message, severity, config =>
+        {
+            config.ShowCloseIcon = true;
+        });
+    }
+    private async Task<IEnumerable<Company>> Search(string value)
+    {  
+        if (string.IsNullOrEmpty(value))
+            return CompanyList;
+        return CompanyList.Where(a=>a.Name.ToUpper().Contains(value.ToUpper())).ToList();
+    }
+}

@@ -1,0 +1,50 @@
+﻿@page "/DesignMode"
+@using Newtonsoft.Json
+@using ShiftWorx.Pages.Personal.LayoutModels
+@inject ApplicationDbContext context
+@inject AuthenticationStateProvider Auth
+@inject IJSRuntime JS
+@attribute [Authorize]
+@layout SecondaryLayout
+<PageTitle>Layouts</PageTitle>
+<MudButton Class="ma-2" OnClick="Init" Variant="Variant.Filled" Color="Color.Primary">InitializeGrid</MudButton>
+<MudButton Class="ma-2" OnClick="Clear" Variant="Variant.Filled" Color="Color.Secondary">Close Grid</MudButton>
+<div class="grid-stack">
+
+    @if (SelectLayout is not null)
+    {
+        foreach (var item in BluebarList)
+        {
+            <div class="grid-stack-item" gs-h="2" gs-w="8">
+                <div class="grid-stack-item-content"><BlueBar fpid="@item.BBSettings.selected_activity_data_source.ToString()" MachineId="item.BBSettings.selected_data_sources.First()"></BlueBar></div>
+            </div>
+        }
+    }
+    @foreach (var Kpi in KpiList)
+    {   
+        <div class="grid-stack-item" gs-h="2">
+            <div class="grid-stack-item-content">
+                <KpiComponent BaseColor="@Kpi.KpiSettings.bg_color" ChangedColor="@Kpi.KpiSettings.threshold.bg_color" threshold="@Kpi.KpiSettings.threshold.value" fpid="@Kpi.KpiSettings.selected_kpi" name="@Kpi.Name" KpiId="Kpi.KpiSettings.selected_kpi"></KpiComponent>
+            </div>
+        </div>
+    }
+</div>
+@code
+{
+    [CascadingParameter]
+    Models.Layout SelectLayout { get; set; }
+    [CascadingParameter]
+    List<BBConfig> BluebarList { get; set; }
+    [CascadingParameter]
+    List<KpiConfig> KpiList { get; set; }
+
+    private void Init()
+    {
+        JS.InvokeVoidAsync("InitializeGrid");
+    }
+    private void Clear()
+    {
+        JS.InvokeVoidAsync("Destroy");
+    }
+}
+

@@ -1,0 +1,55 @@
+﻿@page "/roles"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject UserManager<User> userManager
+@inject RoleManager<IdentityRole> roleManager
+@inject ApplicationDbContext dbContext
+<h3>ClaimsPrincipal Data</h3>
+
+<MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Secondary" @onclick="GetClaimsPrincipalData">Get ClaimsPrincipal Data</MudButton>
+
+<p>@authMessage</p>
+
+@if (claims.Count() > 0)
+{
+    <ul>
+        @foreach (var claim in claims)
+        {
+            <li>@claim.Type: @claim.Value</li>
+        }
+    </ul>
+}
+
+<p>@surnameMessage</p>
+
+@code {
+    private string authMessage;
+    private string surnameMessage;
+    private IEnumerable<Claim> claims = Enumerable.Empty<Claim>();
+    protected override void OnInitialized()
+    {
+
+    }
+
+    private async Task GetClaimsPrincipalData()
+    {
+
+        var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var roleIn = user.Claims.Where(a => a.Type == "role").Select(c => c.Value).SingleOrDefault();
+        var userid = user.Claims.Where(a => a.Type == "nameid").Select(c => c.Value).SingleOrDefault();
+        var identities = dbContext.Users.Where(p => p.Id == userid).FirstOrDefault();
+        if (user.Identity.IsAuthenticated)
+        {
+            authMessage = $"{user.Identity.Name} is authenticated.";
+            claims = user.Claims;
+            surnameMessage =
+                $"Surname: {user.FindFirst(c => c.Type == ClaimTypes.Surname)?.Value}";
+        }
+        else
+        {
+            authMessage = "The user is NOT authenticated.";
+        }
+    }
+}

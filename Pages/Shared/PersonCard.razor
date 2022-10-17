@@ -1,0 +1,21 @@
+﻿<AuthorizeView>
+    <Authorized>
+        <MudCard Elevation="0" Square="true">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudAvatar Image="https://placeimg.com/64/64/people" />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.body2">@context.User.Identity?.Name</MudText>
+                    @{
+                      var test = context;
+                    }
+                    <MudText Typo="Typo.caption">@context.User.Claims.Where(a => a.Type == "role").Select(c=>c.Value).SingleOrDefault()</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+        </MudCard>
+    </Authorized>
+</AuthorizeView>
+@code {
+
+}

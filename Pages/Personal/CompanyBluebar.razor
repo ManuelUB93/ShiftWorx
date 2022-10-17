@@ -1,0 +1,106 @@
+﻿@page "/Company"
+@inject ApplicationDbContext context
+@inject AuthenticationStateProvider Auth
+@attribute [Authorize]
+<PageTitle>Index</PageTitle>
+<MudContainer Class="pa-0 ma-0" MaxWidth="MaxWidth.ExtraExtraLarge" Fixed=false>
+    <MudGrid Spacing="0" Justify="Justify.Center">
+        <MudItem xs="3" Class="@display">
+            <MudPaper Width="100%" Height="100%" Class="overflow-y-auto" Elevation="0">
+                <AuthorizeView Roles="SysAdmin">
+                    <MudSelect ValueChanged="@((int? CompanyId)=>SelectedValueChanged(CompanyId))" Class="ma-3" Label="Select a Company" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var _company in SelectCompanies)
+                        {
+                            <MudSelectItem Value="(int?)_company.Id">@_company.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </AuthorizeView>
+                <MudTreeView T="int" Class="mt-6" @bind-SelectedValue="SelectedValue" Hover="true">
+                    @foreach (var _Company in Companies)
+                    {
+                        <MudTreeViewItem Value="0" Text="@_Company.Name" Icon="@Icons.Filled.Warehouse">
+                            @foreach (var _Factory in _Company.Factories)
+                            {
+                            <MudTreeViewItem Value="0" Text="@_Factory.Name" Icon="@Icons.Filled.Factory">
+                                @foreach (var _Machines in _Factory.Machines)
+                                {
+                                <MudTreeViewItem OnClick="() => state(_Machines.fp_core_Id,_Machines.Name) " Value="_Machines.fp_core_Id" Text="@_Machines.Name" Icon="@Icons.Filled.LaptopMac" />
+                                }
+                        </MudTreeViewItem>
+                            }
+                    </MudTreeViewItem>
+                    }
+                </MudTreeView>
+            </MudPaper>
+        </MudItem>
+        <MudItem Class="pa-3" xs="@Size">
+            <MudToggleIconButton Class="my-1"
+                                 Icon="@Icons.Filled.KeyboardDoubleArrowLeft"
+                                 ToggledIcon="@Icons.Filled.KeyboardDoubleArrowRight" ToggledChanged="test" />
+            @if (SelectedValue != 0)
+            {
+                <BlueBar @ref="ChildComponent" fpid="@(SelectedValue.ToString())" MachineName="@MachineName"></BlueBar>
+            }
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+@code
+{
+    int SelectedValue { get; set; } = 0;
+    List<Models.Company> Companies = new();
+    List<Models.Company> SelectCompanies = new();
+    BlueBar ChildComponent;
+    bool firstpass = true;
+    string MachineName;
+    string display = "d-block";
+    int Size = 9;
+    protected override void OnInitialized()
+    {
+        var Authstate = Auth.GetAuthenticationStateAsync();
+        var user = Authstate.Result.User;
+        var roleIn = user.Claims.Where(a => a.Type == "role").Select(c => c.Value).SingleOrDefault();
+        var userid = user.Claims.Where(a => a.Type == "nameid").Select(c => c.Value).SingleOrDefault();
+        var identities = context.Users.Include(a=>a.Company).Where(p => p.Id == userid).FirstOrDefault();
+        if (roleIn.ToLower().Contains("administrator"))
+        {
+            Companies = context.Company.Include(a => a.Factories).ThenInclude(a => a.Machines).Where(a => a.Id == identities.Company.Id).OrderBy(a => a.Name).ToList();
+    }
+        else
+        {
+            SelectCompanies = context.Company.OrderBy(a => a.Name).ToList();
+        }
+
+    }
+    public void SelectedValueChanged(int? CompanyId)
+    {
+        Companies = context.Company.Include(a => a.Factories).ThenInclude(a => a.Machines).Where(a => a.Id == CompanyId).ToList();
+        StateHasChanged();
+    }
+    public async void state(int fpid, string name)
+    {
+        SelectedValue = fpid;
+        MachineName = name;
+        if (!firstpass)
+        {
+            ChildComponent.fpid = fpid.ToString();
+            ChildComponent.MachineName = name;
+            await ChildComponent.UpdateChart();
+        }
+        firstpass = false;
+        StateHasChanged();
+    }
+    public void test()
+    {
+        if (display == "d-block")
+        {
+            display = "d-none";
+            Size = 12;
+        }
+        else
+        {
+            Size = 9;
+            display = "d-block";
+        }
+        StateHasChanged();
+    }
+}

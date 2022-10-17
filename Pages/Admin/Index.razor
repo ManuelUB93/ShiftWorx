@@ -1,0 +1,29 @@
+﻿@page "/Admin"
+@layout AdminLayout
+
+<MudTabs HeaderPosition="TabHeaderPosition.Before" Style="height:100%;" Outlined="false" Position="Position.Left" Rounded="true" Border="false"
+         ApplyEffectsToContainer="true" PanelClass="pa-6">
+    <Header>
+        <div style="width:100%;" class="d-flex my-5 pa-2 justify-space-between">
+            <MudText Typo="Typo.h5">Roles</MudText> 
+            <MudButton Color="Color.Primary" Variant="Variant.Filled">Add</MudButton>
+        </div>
+    </Header>
+
+    <ChildContent>
+        <MudTabPanel Text="Item One">
+            <MudText>Content One</MudText>
+        </MudTabPanel>
+        <MudTabPanel Text="Item Two">
+            <MudText>Content Two</MudText>
+        </MudTabPanel>
+        <MudTabPanel Text="Item Three">
+            <MudText>Content Three</MudText>
+        </MudTabPanel>
+    </ChildContent>
+
+</MudTabs>
+
+@code {
+
+}

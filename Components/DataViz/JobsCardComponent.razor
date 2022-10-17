@@ -1,0 +1,46 @@
+﻿@using ShiftWorx.Components.Methods
+@using ShiftWorx.Components.Responses
+@inject FpData _context;
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+
+            <MudToolBar DisableGutters="true">
+                <MudText Typo="Typo.h6">Jobs</MudText>
+                <MudSpacer />
+                <MudButton OnClick="GetRunningJobs" Variant="Variant.Filled" Color="MudBlazor.Color.Primary">Change</MudButton>
+            </MudToolBar>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @foreach (var item in RunningJobs.data)
+        {
+            <TimeCounterCard Parent=this JobId="@item.id.ToString()" Description="@item.desc" AttachedTime="@item.attached_at" Name="@item.name"></TimeCounterCard>
+        }
+    </MudCardContent>
+</MudCard>
+@code {
+
+    RunningJobsResponse  RunningJobs;
+    public void GetRunningJobs()
+    {
+        StateHasChanged();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        GetRunningJobs();
+    }
+    public void RefreshState()
+    {
+        GetRunningJobs();
+    }
+
+}
+
+
+
+
+
+
+
+

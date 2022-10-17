@@ -1,0 +1,28 @@
+﻿@inject ApplicationDbContext _dbContext
+<MudForm Class="px-8 pb-6" @ref="form" @bind-IsValid="@success">
+    <MudTextField @bind-Value=machine.Name Label="Name" Required="true" RequiredError="Name is required!" />
+    <MudTextField @bind-Value=machine.Description  Label="Description"/>
+    <MudTextField @bind-Value=machine.Group  Label="Group"/>
+    <MudTextField @bind-Value=machine.RemoteAddress Label="Remote Address"  />
+    <div class="d-flex align-center justify-end mt-4">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" OnClick="CreateFactory" Class="ml-auto">Create Machine</MudButton>
+    </div>
+</MudForm>
+
+@code
+{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter]
+    public Factory factory { get; set; }
+    bool success;
+    MudForm form;
+    Machine machine = new() { };
+
+    private void CreateFactory()
+    {
+        factory.Machines.Add(machine);
+        _dbContext.Factory.Update(factory);
+        _dbContext.SaveChanges();
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

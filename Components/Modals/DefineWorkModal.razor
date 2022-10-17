@@ -1,0 +1,104 @@
+﻿@inject ApplicationDbContext _dbContext
+<MudForm Class="px-8 pb-6">
+    <MudNumericField @bind-Value="MinimumActivityFilter" Label="Minimum Activity Filter" Variant="Variant.Text" Min="0" Max="999" />
+    <MudNumericField @bind-Value="MinimumInactivityFilter" Label="Minimum Inactivity Filter" Variant="Variant.Text" Min="0" Max="999" />
+    <MudNumericField @bind-Value="MinimumActivityModifier" Label="Minimum Activity Modifier" Variant="Variant.Text" Min="0" Max="999" />
+    <MudNumericField @bind-Value="MaximumActivityModifier" Label="Maximum Activity Modifier" Variant="Variant.Text" Min="0" Max="999" />
+    <div class="d-flex align-center justify-end mt-4">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Save" Class="ml-auto">Save</MudButton>
+    </div>
+</MudForm>
+
+@code
+{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter]
+    public object Obj { get; set; }
+    private int? MinimumActivityFilter;
+    private int? MinimumInactivityFilter;
+    private int? MinimumActivityModifier;
+    private int? MaximumActivityModifier;
+    protected override void OnInitialized()
+    {
+        if (Obj is Models.Company)
+        {
+            var Company = Obj as Models.Company;
+            MinimumActivityFilter = Company.MinimumActivityFilter;
+            MinimumInactivityFilter = Company.MinimumInactivityFilter;
+            MinimumActivityModifier = Company.MinimumActivityModifier;
+            MaximumActivityModifier = Company.MaximumActivityModifier;
+        }
+        if (Obj is Models.Factory)
+        {
+            var Factory = Obj as Models.Factory;
+            MinimumActivityFilter = Factory.MinimumActivityFilter;
+            MinimumInactivityFilter = Factory.MinimumInactivityFilter;
+            MinimumActivityModifier = Factory.MinimumActivityModifier;
+            MaximumActivityModifier = Factory.MaximumActivityModifier;
+        }
+        //if (Obj is Models.Machine)
+        //{
+        //    var Machine = Obj as Models.Machine;
+        //    MinimumActivityFilter = Machine.MinimumActivityFilter;
+        //    MinimumInactivityFilter = Machine.MinimumInactivityFilter;
+        //    MinimumActivityModifier = Machine.MinimumActivityModifier;
+        //    MaximumActivityModifier = Machine.MaximumActivityModifier;
+        //}
+        //if (Obj is Models.Collector)
+        //{
+        //    var Collector = Obj as Models.Collector;
+        //    MinimumActivityFilter = Collector.MinimumActivityFilter;
+        //    MinimumInactivityFilter = Collector;
+        //    MinimumActivityModifier = Collector.MinimumActivityModifier;
+        //    MaximumActivityModifier = Collector.MaximumActivityModifier;
+        //}
+    }
+    private void Save()
+    {
+        if (Obj is Models.Company)
+        {
+            var Company = Obj as Models.Company;
+            Company.MinimumActivityFilter = MinimumActivityFilter;
+            Company.MinimumInactivityFilter = MinimumInactivityFilter;
+            Company.MinimumActivityModifier = MinimumActivityModifier;
+            Company.MaximumActivityModifier = MaximumActivityModifier;
+            _dbContext.Company.Update(Company);
+            _dbContext.SaveChanges();
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        if (Obj is Models.Factory)
+        {
+            var Factory = Obj as Models.Factory;
+            Factory.MinimumActivityFilter = MinimumActivityFilter;
+            Factory.MinimumInactivityFilter = MinimumInactivityFilter;
+            Factory.MinimumActivityModifier = MinimumActivityModifier;
+            Factory.MaximumActivityModifier = MaximumActivityModifier;
+            _dbContext.Factory.Update(Factory);
+            _dbContext.SaveChanges();
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        //if (Obj is Models.Machine)
+        //{
+        //    var Machine = Obj as Models.Machine;
+        //    Machine.MinimumActivityFilter = MinimumActivityFilter;
+        //    Machine.MinimumInactivityFilter = MinimumInactivityFilter;
+        //    Machine.MinimumActivityModifier = MinimumActivityModifier;
+        //    Machine.MaximumActivityModifier = MaximumActivityModifier;
+        //    _dbContext.Company.Update(Machine);
+        //    _dbContext.SaveChanges();
+        //}
+        //if (Obj is Models.Collector)
+        //{
+        //    var Collector = Obj as Models.Collector;
+        //    Collector.MinimumActivityFilter = MinimumActivityFilter;
+        //    Collector.MinimumInactivityFilter = MinimumInactivityFilter;
+        //    Collector.MinimumActivityModifier = MinimumActivityModifier;
+        //    Collector.MaximumActivityModifier = MaximumActivityModifier;
+        //    _dbContext.Company.Update(Collector);
+        //    _dbContext.SaveChanges();
+        //}
+
+
+
+    }
+}

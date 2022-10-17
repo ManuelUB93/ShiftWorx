@@ -1,0 +1,76 @@
+﻿@using ShiftWorx.Components.Methods
+@using ShiftWorx.Components.Responses
+@inject FpData _context;
+@inject  IDbContextFactory<ApplicationDbContext>  DbFactory;
+<MudPaper MinHeight="100%" Class="d-flex flex-grow-1 flex-column" Style=@("background-color:"+Color)>
+    <MudText Style=@("color:"+textcolor) Class="pa-2" Align="MudBlazor.Align.Center" Typo="Typo.subtitle2">@name</MudText>
+    @if (!loaded)
+    {
+        <div class="d-flex justify-center  align-center">
+            <MudProgressCircular Color="MudBlazor.Color.Primary" Size="Size.Medium" Indeterminate="true" />
+        </div>
+    }
+    else
+    {
+        <MudText Style=@("color:"+textcolor)  Align="MudBlazor.Align.Center" Typo="Typo.h6">@Test.Data @suffix</MudText>
+    }
+</MudPaper>
+
+@code {
+    private bool loaded = false;
+    [Parameter]
+    public int fpid { get; set; }
+    [Parameter]
+    public int threshold { get; set; }
+    [Parameter]
+    public string BaseColor { get; set; }
+    public string Color;
+    public string textcolor;
+    [Parameter]
+    public string ChangedColor { get; set; }
+    [Parameter]
+    public string name { get; set; }
+    [Parameter]
+    public int KpiId { get; set; }
+    public string suffix { get; set; }
+    KpiReportResponse Test = new();
+    protected override async Task OnInitializedAsync()
+    {
+        var dbcontext = DbFactory.CreateDbContext();
+        var KpiDef = await dbcontext.ReportDefinition.Where(a => a.fp_core_id == KpiId).FirstAsync();
+        suffix = KpiDef.Suffix;
+        Color = BaseColor;
+        textcolor = "#FFF";
+        loaded = false;
+        Test = await _context.GetKpiReport(fpid.ToString());
+        if (Test.Data is not null)
+        {
+            if (Double.Parse(Test.Data) > threshold)
+            {
+                Color = ChangedColor;
+                if (ChangedColor == "#00f500")
+                {
+                    textcolor = "#000";
+                }
+                else
+                {
+                    textcolor = "#FFF";
+                }
+            }
+            if (true)
+            {
+
+            }
+        }
+        loaded = true;
+        StateHasChanged();
+    }
+}
+
+
+
+
+
+
+
+

@@ -1,0 +1,49 @@
+﻿@using ShiftWorx.Components.Methods
+@using ShiftWorx.Components.Responses
+@inject FpData _context;
+<MudCard>
+    <MudCardHeader>
+        <CardHeaderContent>
+            <MudToolBar DisableGutters="true">
+                <MudText Typo="Typo.h6">Operator (Clock In/Out)</MudText>
+                <MudSpacer />
+                <MudButton OnClick="GetClockedInUsers" Variant="Variant.Filled" Color="MudBlazor.Color.Primary">Change</MudButton>
+            </MudToolBar>
+        </CardHeaderContent>
+    </MudCardHeader>
+    <MudCardContent>
+        @foreach (var item in ClockedInUsers.data)
+        {
+            if (item.is_attached == 1)
+            {
+                <ClockInTimeCounter Parent=this JobId="@item.id.ToString()" AttachedTime="@item.current_attachments.First().attached_at" Name="@item.display_name"></ClockInTimeCounter>
+            }
+        }
+    </MudCardContent>
+</MudCard>
+@code {
+    UserSimplifiedResponse ClockedInUsers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        GetClockedInUsers();
+    }
+    public async Task GetClockedInUsers()
+    {
+        await _context.GetSimplifiedUser("9769");
+        StateHasChanged();
+    }
+    public void RefreshState()
+    {
+        GetClockedInUsers();
+    }
+
+}
+
+
+
+
+
+
+
+

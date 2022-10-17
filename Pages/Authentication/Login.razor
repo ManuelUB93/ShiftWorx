@@ -1,0 +1,68 @@
+﻿@page "/Login"
+@inject UserManager<User> _userManager
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject ISnackbar Snackbar
+@layout LoginLayout
+
+<PageTitle>ShiftWorx Authentication</PageTitle>
+<div class="d-flex justify-center">
+    <MudText>Enter your login credentials below</MudText>    
+</div>
+<MudTextField T="string" @bind-Value="@Email" Label="E-mail" Variant="Variant.Outlined" Class="my-6"></MudTextField>
+<MudTextField @bind-Value="@Password" Label="Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" />
+<div Class="d-flex justify-space-between align-center">
+    <MudCheckBox T="bool" Label="Remember me?" @bind-Checked="@RememberMe" Color="MudBlazor.Color.Primary" Class="ml-n1 my-3"></MudCheckBox>
+    <MudLink Href="/ForgotPassword">Forgot your password?</MudLink>
+</div>
+<MudButton Variant="Variant.Filled" Color="MudBlazor.Color.Primary" OnClick="test" Size="Size.Large" FullWidth="true">Sign In</MudButton>
+<div Class="d-flex justify-center">
+    <MudText Class="mt-4" Color="MudBlazor.Color.Dark" Typo="Typo.subtitle1">FreePoint Technologies Inc. 2022.</MudText>
+</div>
+@code {
+    string Password { get; set; } = "";
+    string Email { get; set; } = "";
+
+    public bool RememberMe { get; set; }
+    public IList<AuthenticationScheme> ExternalLogins { get; set; }
+    bool PasswordVisibility;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    void TogglePasswordVisibility()
+    {
+        @if (PasswordVisibility)
+        {
+            PasswordVisibility = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            PasswordVisibility = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+    public async void test()
+    {
+        var identityUser = await _userManager.FindByEmailAsync(Email);
+        if (identityUser == null)
+        {
+                Snackbar.Add("User Not Found", Severity.Error , config => { config.ShowCloseIcon = true; config.ShowTransitionDuration = 150; config.HideTransitionDuration = 150; config.VisibleStateDuration = 1000; });
+        }
+        else
+        {
+            if (await _userManager.CheckPasswordAsync(identityUser, Password) == false)
+            {
+                Snackbar.Add("Wrong Password", Severity.Error , config => { config.ShowCloseIcon = true; config.ShowTransitionDuration = 150; config.HideTransitionDuration = 150; config.VisibleStateDuration = 1000; });
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/Account/LoginInternal?User=" + Email + "&Password=" + Password + "&RememberMe=" + RememberMe, true);
+            }
+        }
+
+
+    }
+}

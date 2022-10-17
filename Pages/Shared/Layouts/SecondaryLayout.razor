@@ -1,0 +1,125 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject ApplicationDbContext context
+@inject AuthenticationStateProvider Auth
+
+<MudThemeProvider IsDarkMode=_isDarkMode Theme="_currentTheme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudAppBar Elevation="3">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="MudBlazor.Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        @if (_isDarkMode)
+        {
+            <MudLink Href=""><MudImage Src="./img/icons/shiftworxlogo.png" /></MudLink>
+
+        }
+        else
+        {
+            <MudLink Href=""><MudImage Width="200" Src="./img/shiftworx-logo-v2.png" /></MudLink>
+        }
+        <AuthorizeView Roles="SysAdmin">
+            <div class="mx-4" style="width:300px">
+                <MudSelect ValueChanged="@((int? CompanyId)=>SelectedCompanyChanged(CompanyId))" Label="Select a Company" AnchorOrigin="Origin.BottomCenter">
+                    @foreach (var _company in CompanyList)
+                    {
+                        <MudSelectItem Value="(int?)_company.Id">@_company.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+        </AuthorizeView>
+        <MudSpacer />
+        <MudToggleIconButton @bind-Toggled="_isDarkMode" Icon="@Icons.Material.Filled.LightMode" ToggledIcon="@Icons.Material.Filled.DarkMode" />
+        <MudMenu Direction="Direction.Left" OffsetX="true" Dense="true" Class="mt-1 ml-4">
+            <ActivatorContent>
+                <MudAvatar Image="https://placeimg.com/64/64/people" />
+            </ActivatorContent>
+            <ChildContent>
+                <PersonCard />
+                <MudDivider />
+                <MudListItem Text="Admin" Icon="@Icons.Material.Outlined.AdminPanelSettings" Href="/Admin" />
+                <MudDivider Class="mb-2" />
+                <MudListItem Text="Account" Icon="@Icons.Material.Outlined.Person" Href="/Personal/Account" />
+                <MudListItem Text="Logout" Icon="@Icons.Material.Outlined.Login" OnClick="(()=>Logout())" />
+            </ChildContent>
+        </MudMenu>
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="3">
+        <MudNavMenu>
+            @if (LayoutList is not null)
+            {
+                <MudDrawerHeader>
+                    <MudSelect T="int?" ValueChanged="@(async (int? Id)=> await SelectedValueChanged(Id))" Label="Select a Layout" AnchorOrigin="Origin.BottomCenter">
+                        @foreach (var Layout in LayoutList)
+                        {
+
+                            <MudSelectItem Value="(int?)Layout.Id">@Layout.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudDrawerHeader>
+            }
+            <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Filled.Brush">Layouts</MudNavLink>
+            <MudNavLink Href="DesignMode" Match="NavLinkMatch.All" Icon="@Icons.Filled.Edit">Enter Design Mode</MudNavLink>
+            <AuthorizeView Roles="SysAdmin">
+                <MudNavLink Href="Company" Match="NavLinkMatch.All" Icon="@Icons.Filled.Edit">Companies</MudNavLink>
+            </AuthorizeView>
+            <AuthorizeView Roles="Administrator">
+                <MudNavLink Href="Company" Match="NavLinkMatch.All" Icon="@Icons.Filled.Edit">Company</MudNavLink>
+            </AuthorizeView>
+            <MudNavLink Href="Reporting" Match="NavLinkMatch.All" Icon="@Icons.Filled.Assessment">Reporting</MudNavLink>
+            <MudNavLink Href="Schedule Reports" Match="NavLinkMatch.All" Icon="@Icons.Filled.CalendarMonth">Schedule Reports</MudNavLink>
+            <MudNavLink Href="JobManager" Match="NavLinkMatch.All" Icon="@Icons.Filled.Build">Job Manager</MudNavLink>
+            <MudDivider Class="mb-4" />
+            <MudNavLink Href="AboutUs" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.List">About Us</MudNavLink>
+            <MudNavLink Href="SupportCenter" Match="NavLinkMatch.All" Icon="@Icons.Filled.LiveHelp">Support Center</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+    <MudMainContent Style="height:100vh;">
+            <CascadingValue Value="SelectLayout">  
+                    <CascadingValue Value="_isDarkMode">
+                        @Body
+            </CascadingValue>
+        </CascadingValue>
+    </MudMainContent>
+</MudLayout>
+@code {
+    bool _drawerOpen = true;
+    private MudTheme _currentTheme = new MudBlazorAdminDashboard();
+    private bool _isDarkMode;
+    public List<Models.Layout> LayoutList;
+    List<Models.Company> CompanyList;
+    public Models.Layout SelectLayout;
+    public Models.Company SelectedCompany;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await Auth.GetAuthenticationStateAsync();
+        var userid = authState.User.Claims.Where(a => a.Type == "nameid").Select(c => c.Value).SingleOrDefault();
+        var User = context.Users.Include(a => a.Company).Where(p => p.Id == userid).FirstOrDefault();
+        if (User.Company is not null)
+        {
+            LayoutList = context.Layout.Where(a => a.Factory.CompanyId == User.Company.Id).OrderBy(a => a.Name).ToList();
+        }
+        CompanyList = context.Company.OrderBy(a => a.Name).ToList();
+    }
+    public async Task SelectedCompanyChanged(int? Id)
+    {
+        LayoutList = await context.Layout.Where(a => a.Factory.CompanyId == Id).OrderBy(a => a.Name).ToListAsync();
+        StateHasChanged();
+    } 
+    public async Task SelectedValueChanged(int? Id)
+    {
+        SelectLayout = await context.Layout.Include(a => a.Panels).ThenInclude(b => b.PanelType).Where(a => a.Id == Id).FirstAsync();
+        StateHasChanged();
+    }
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+    public void Logout()
+    {
+        NavigationManager.NavigateTo("/Account/LogOut", true);
+    }
+}
+
+
+

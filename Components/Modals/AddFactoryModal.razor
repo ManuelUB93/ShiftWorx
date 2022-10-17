@@ -1,0 +1,38 @@
+﻿@inject ApplicationDbContext _dbContext
+<MudForm Class="px-8 pb-6" @ref="form" @bind-IsValid="@success" >
+    <MudTextField @bind-Value=Factory.Name Label="Name" Required="true" RequiredError="Name is required!" />
+    <MudTextField @bind-Value=Factory.Description Label="Description" />
+    <MudTextField @bind-Value=Factory.Latitude Label="Latitude" Required="true" RequiredError="Latitude is required!" />
+    <MudTextField @bind-Value=Factory.Longitude Label="Longitude" Required="true" RequiredError="Longitude is required!" />
+    <MudTextField @bind-Value=Factory.Street Label="Street" Required="true" RequiredError="Street is required!" />
+    <MudTextField @bind-Value=Factory.City Label="City" Required="true" RequiredError="City is required!" />
+    <MudTextField @bind-Value=Factory.Province Label="Province" Required="true" RequiredError="Province is required!" />
+    <MudTextField @bind-Value=Factory.Country Label="Country" Required="true" RequiredError="Country is required!" />
+    <MudTextField @bind-Value=Factory.PostalCode Label="PostalCode" Required="true" RequiredError="Postal Code is required!" />
+
+    <div class="d-flex align-center justify-space-between">
+        <MudCheckBox @bind-Checked=Factory.IsActive Label="Active" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" OnClick="CreateFactory" Class="ml-auto">Create Factory</MudButton>
+    </div>
+</MudForm>
+
+@code
+{
+
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter]
+    public Models.Company Company { get; set; }
+    bool success; 
+    Factory Factory = new() { IsActive = true, FactoryKey = "" };
+    MudForm form;
+
+    private void CreateFactory()
+    {
+        var comp = Company;
+        var test = Factory;
+        comp.Factories.Add(test);
+        _dbContext.Company.Update(Company);
+        _dbContext.SaveChanges();
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

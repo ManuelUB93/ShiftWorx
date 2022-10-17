@@ -1,0 +1,27 @@
+﻿@inject ApplicationDbContext _dbContext
+<MudForm Class="px-8 pb-6" @ref="form" @bind-IsValid="@success">
+    <MudTextField @bind-Value=collector.Name Label="Name" Required="true" RequiredError="Name is required!" />
+    <MudTextField @bind-Value=collector.Description  Label="Description"/>
+    <MudTextField @bind-Value=collector.FPHardwareId  Label="FreePoint HWID"/>
+    <div class="d-flex align-center justify-end mt-4">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" OnClick="Create" Class="ml-auto">Create Collector</MudButton>
+    </div>
+</MudForm>
+
+@code
+{
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter]
+    public Machine machine { get; set; }
+    bool success;
+    MudForm form;
+    Collector collector = new() { };
+
+    private void Create()
+    {
+        machine.Collectors.Add(collector);
+        _dbContext.Machine.Update(machine);
+        _dbContext.SaveChanges();
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

@@ -1,0 +1,193 @@
+﻿@using ApexCharts
+@using ShiftWorx.Components.Methods
+@using ShiftWorx.Components.Responses
+@inject FpData _context;
+@inject IDbContextFactory<ApplicationDbContext> DbFactory;
+<PageTitle>Shiftworx v1</PageTitle>
+
+<MudPaper Class="mb-2 pa-3">
+    <MudText Typo="Typo.subtitle2">@MachineName</MudText>
+    <MudToolBar Class="pa-3 mb-2" Dense="true" DisableGutters="true">
+        <MudIconButton OnClick="UpdateChart" Icon="@Icons.Material.Outlined.Refresh" Color="MudBlazor.Color.Inherit" Class="mr-5" />
+        <MudSpacer />
+        <MudDateRangePicker Label="Pick a Range" @bind-DateRange="_dateRange" />
+    </MudToolBar>
+    @if (!loaded)
+    {
+        <div class="d-flex justify-center my-8 align-center">
+            <MudProgressCircular Color="MudBlazor.Color.Primary" Size="Size.Large" Indeterminate="true" />
+        </div>
+    }
+    <div class="@display">
+        <ApexChart @ref=chart TItem="TimeRangeData"
+                   Options=options
+                   XAxisType="XAxisType.Datetime">
+            <ApexPointTooltip>
+                <div class="pa-4">
+                    @{
+                        var point = (ListPoint<TimeRangeData>)context.DataPoint;
+                        <MudText Typo="Typo.h6">@point.X</MudText>
+                        <MudText class="me-1">Start Date:@point.Items.First().TimeStart.ToString("D")</MudText>
+                        <MudText class="me-1">End Date:@point.Items.First().TimeEnd.ToString("D") </MudText>
+                        <MudText class="me-1">Start Time:@point.Items.First().TimeStart.ToString("T")</MudText>
+                        if (point.Items.First().TimeEnd < DateTime.UtcNow.AddMinutes(-1))
+                        {
+                            <MudText class="me-1">End Time:@point.Items.First().TimeEnd.ToString("T")</MudText>
+                        }
+                        else
+                        {
+                            <MudText class="me-1">End Time:<MudText class="text-bg-danger">Active</MudText></MudText>
+                        }
+                    }
+                </div>
+            </ApexPointTooltip>
+            <ChildContent>
+                <ApexRangeSeries TItem="TimeRangeData"
+                                 Items="Jobs"
+                                 XValue="@(e => e.Name)"
+                                 YMinValue="@(e =>e.TimeStart.ToUnixTimeMilliseconds())"
+                                 YMaxValue="@(e =>e.TimeEnd.ToUnixTimeMilliseconds())"
+                                 PointColor="@(e =>e.PointColor)" />
+            </ChildContent>
+        </ApexChart>
+    </div>
+
+</MudPaper>
+
+@code {
+
+    DateRange _dateRange { get; set; } = new(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow.AddMinutes(30));
+    [Parameter]
+    public string? fpid { get; set; }
+    [Parameter]
+    public int? MachineId { get; set; }
+    public string? MachineName { get; set; }
+    [CascadingParameter]
+    bool _isDarkMode { get; set; }
+    private ApexChart<TimeRangeData>? chart;
+    private List<TimeRangeData> Jobs { get; set; } = new();
+    private ApexChartOptions<TimeRangeData>? options;
+    private bool loaded;
+    private string display = "d-block";
+    protected override async Task OnInitializedAsync()
+    {
+
+        options = new ApexChartOptions<TimeRangeData>
+            {
+                PlotOptions = new PlotOptions
+                {
+                    Bar = new PlotOptionsBar
+                    {
+                        Horizontal = true
+                    }
+                },
+                Theme = new()
+                {
+
+                }
+            };
+        if (_isDarkMode)
+        {
+            options.Theme.Mode = Mode.Dark;
+
+        }
+        else
+        {
+            options.Theme.Mode = Mode.Light;
+        }
+        options.Chart = new()
+            {
+                Background = "00FFFFFF",
+                Height = "88%"
+
+            };
+        options.Yaxis = new List<YAxis>();
+        options.Yaxis.Add(new YAxis
+            {
+                Min = DateTime.UtcNow.AddHours(-4).AddDays(-1).ToUnixTimeMilliseconds(),
+                Max = DateTime.UtcNow.AddHours(-4).AddMinutes(5).ToUnixTimeMilliseconds()
+            });
+        var dbcontext = DbFactory.CreateDbContext();
+        var Machine = await dbcontext.Machine.Where(a => a.fp_core_Id == MachineId).FirstAsync();
+        if (Machine is not null)
+        {
+            MachineName = Machine.Name;
+        }
+        await UpdateChart();
+    }
+
+    public async Task UpdateChart()
+    {
+        display = "d-none";
+        loaded = false;
+        await Task.Run(async () => await GetData());
+        loaded = true;
+        display = "d-block";
+        await chart.RenderAsync();
+        await InvokeAsync(() => StateHasChanged());
+    }
+
+    public async Task GetData()
+    {
+        var test1 = DateTime.UtcNow.AddDays(-1);
+        var test2 = DateTime.UtcNow.AddMinutes(30);
+        long StartDate = DateTime.UtcNow.AddDays(-1).ToUnixTimeMilliseconds() / 1000;
+        long EndDate = DateTime.UtcNow.AddMinutes(30).ToUnixTimeMilliseconds() / 1000;
+        if (test1 != null && test2 != null)
+        {
+            if (_dateRange.Start.Value == _dateRange.End.Value)
+            {
+                _dateRange.End = _dateRange.End.Value.AddHours(23).AddMinutes(59).AddSeconds(59);
+            }
+            StartDate = _dateRange.Start.Value.ToUnixTimeMilliseconds() / 1000;
+            EndDate = _dateRange.End.Value.ToUnixTimeMilliseconds() / 1000;
+        }
+        Jobs.Clear();
+        var BluebarData = await _context.GetBlueBar(fpid, StartDate.ToString(), EndDate.ToString());
+        TimeRangeData Job = new TimeRangeData();
+        bool checkforpass = true;
+        if (BluebarData.data != null)
+        {
+            if (BluebarData.data.state_mask.Count >= 1)
+            {
+                var lastitem = BluebarData.data.state_mask.Last();
+                var firstitem = BluebarData.data.state_mask.First();
+                foreach (var item in BluebarData.data.state_mask)
+                {
+                    if (item.Equals(firstitem))
+                    {
+                        if (item.y == 0)
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (item.y != 0)
+                    {
+                        Job = new();
+                        Job.PointColor = "#2082ce";
+                        Job.Name = MachineName;
+                        Job.TimeStart = DateTimeOffset.FromUnixTimeSeconds(item.x).DateTime.AddHours(-4);
+                        if (item.Equals(lastitem))
+                        {
+                            if (item.y != 0)
+                            {
+                                Job.TimeEnd = DateTime.UtcNow.AddHours(-4);
+                                Jobs.Add(Job);
+                            }
+                        }
+                        continue;
+                    }
+                    else
+                    {
+                        Job.TimeEnd = DateTimeOffset.FromUnixTimeSeconds(item.x).DateTime.AddHours(-4);
+                    }
+                    Jobs.Add(Job);
+                }
+            }
+        }
+    }
+}
+
+
+

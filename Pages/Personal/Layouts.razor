@@ -1,0 +1,181 @@
+﻿@page "/"
+@using Newtonsoft.Json
+@using ShiftWorx.Components.Methods
+@using ShiftWorx.Pages.Personal.LayoutModels
+@inject ApplicationDbContext context
+@inject AuthenticationStateProvider Auth
+@inject FpData fp;
+@inject IDialogService DialogService
+@attribute [Authorize]
+@layout SecondaryLayout
+<PageTitle>Layouts</PageTitle>
+
+<MudContainer Class="pa-0 ma-0" MaxWidth="MaxWidth.ExtraExtraLarge" Fixed=false>
+
+    <MudGrid Spacing="0" Justify="Justify.Center">
+        <MudItem Class="pa-3" xs="8">
+            @if (SelectLayout is not null)
+            {
+                foreach (var item in BluebarList)
+                {
+
+                    <BlueBar fpid="@item.BBSettings.selected_activity_data_source.ToString()" MachineId="@item.BBSettings.selected_data_sources.First()"></BlueBar>
+                }
+
+            }
+        </MudItem>
+        <MudItem xs="4">
+            <MudGrid Spacing="0">
+                @foreach (var Kpi in KpiList)
+                {
+                    <MudItem Class="pa-2" xs="3">
+                        <KpiComponent BaseColor="@Kpi.KpiSettings.bg_color" ChangedColor="@Kpi.KpiSettings.threshold.bg_color" threshold="@Kpi.KpiSettings.threshold.value" fpid="@Kpi.KpiSettings.selected_kpi" name="@Kpi.Name" KpiId="@Kpi.KpiSettings.selected_kpi"></KpiComponent>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code
+{
+    [CascadingParameter]
+    Models.Layout SelectLayout { get { return Layout; } set 
+        {
+            Layout = value;
+            GetPanels(); 
+        } }
+    private Layout Layout;
+    private List<BBConfig> BluebarList = new();
+    private List<KpiConfig> KpiList = new();
+    private async Task GetPanels()
+    {
+                if (Layout is not null)
+        {
+            foreach (var Panel in SelectLayout.Panels)
+            {
+                switch (Panel.PanelTypeId)
+                {
+                    //Operator Clocking (In/Out)
+                    case 3:
+                        break;
+                    //Status Codes (Start/Stop)
+                    case 4:
+                        break;
+                    //Jobs (Start/Stop)
+                    case 5:
+                        break;
+                    //Scrap Entry
+                    case 6:
+                        break;
+                    //User Event Log
+                    case 7:
+                        break;
+                    //Narration Timeline
+                    case 8:
+                        break;
+                    //Data Viewer Panel
+                    case 9:
+                        break;
+                    //Manual Data Entry
+                    case 10:
+                        break;
+                    //Jobs with Counts Panel
+                    case 11:
+                        break;
+                    //Shift Uptime
+                    case 12:
+                        break;
+                    //Shift Activity CSV Export
+                    case 13:
+                        break;
+                    //Blue Bar
+                    case 14:
+                        break;
+                    //Shift Uptime with CSV Export
+                    case 15:
+                        break;
+                    //Narration Timeline
+                    case 16:
+                        break;
+                    //Blue Bar
+                    case 17:
+                        var config = Panel.Config;
+                        var BBplace = Panel.Placement;
+                        BBplace = BBplace.Replace(@"\", "");
+                        config = config.Replace(@"\", "");
+                        var Obj = JsonConvert.DeserializeObject<BBSettings>(config);
+                        var PlaceObj = JsonConvert.DeserializeObject<BBPlacement>(BBplace);
+                        BluebarList.Add(new BBConfig
+                            {
+                                Name = Panel.Name,
+                                BBSettings = Obj,
+                                BBPlacement = PlaceObj
+                            });
+                        break;
+                    //KPI
+                    case 18:
+                        var KpiConfig = Panel.Config;
+                        var Kpiplace = Panel.Placement;
+                        KpiConfig = KpiConfig.Replace(@"\", "");
+                        Kpiplace = Kpiplace.Replace(@"\", "");
+                        var KpiObj = JsonConvert.DeserializeObject<KpiSettings>(KpiConfig);
+                        var KpiPlaceObj = JsonConvert.DeserializeObject<KpiPlacement>(Kpiplace);
+                        KpiList.Add(new KpiConfig
+                            {
+                                Name = Panel.Name,
+                                KpiSettings = KpiObj,
+                                KpiPlacement = KpiPlaceObj
+                            });
+                        break;
+                    //Shift Uptime with CSV Export
+                    case 19:
+                        break;
+                    //Call Station
+                    case 20:
+                        break;
+                    //Report
+                    case 21:
+                        break;
+                    //Airport Control Dashboard
+                    case 22:
+                        break;
+                    //Schedule Manager
+                    case 23:
+                        break;
+                    //Operator Clocking (In/Out)
+                    case 24:
+                        break;
+                    //Jobs (Start/Stop)
+                    case 25:
+                        break;
+                    //Job Manager
+                    case 26:
+                        break;
+                    //Scheduled Status Code Report
+                    case 27:
+                        break;
+                    //My Checklists
+                    case 28:
+                        break;
+                    //Checklist Counts
+                    case 29:
+                        break;
+                    //Scheduled CT Deviation Report
+                    case 30:
+                        break;
+                }
+            }
+            BluebarList = BluebarList.OrderBy(a => a.BBPlacement.x).ToList();
+            BluebarList = BluebarList.OrderBy(a => a.BBPlacement.y).ToList();
+            KpiList = KpiList.OrderBy(a => a.KpiPlacement.x).ToList();
+            KpiList = KpiList.OrderBy(a => a.KpiPlacement.y).ToList();
+            if (BluebarList.Count == 0 && KpiList.Count == 0)
+            {
+                var result = await DialogService.ShowMessageBox("No Components", "This layout has not been implemented!");
+            }
+            StateHasChanged();
+        }
+    }
+
+}
