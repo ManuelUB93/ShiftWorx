@@ -41,6 +41,7 @@ namespace ShiftWorx.Models
         public string CreatedBy { get; set; } // owner_id:user email or id? of checklist creater
 
         public virtual ICollection<ChecklistTemplateSection> Sections { get; set; }
+        public virtual ICollection<FileAttachment> FileAttachments { get; set; }
 
 
         public int fp_core_id { get; set; }

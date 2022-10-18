@@ -12,7 +12,8 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AzureStorageAccount": "DefaultEndpointsProtocol=https;AccountName=shiftworx;AccountKey=dL1H1EPk7pCci5KlbheNW536e/pW5QEVZckI/LzoXUV4DaPN1+OfDhYBHZ2NhTafMTMWWFqkIHZM+AStiMAHpg==;EndpointSuffix=core.windows.net"
       },
       "applicationUrl": "https://localhost:7160;http://localhost:5160",
       "dotnetRunMessages": true
@@ -22,6 +23,7 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
+        "AzureStorageAccount": "DefaultEndpointsProtocol=https;AccountName=shiftworx;AccountKey=dL1H1EPk7pCci5KlbheNW536e/pW5QEVZckI/LzoXUV4DaPN1+OfDhYBHZ2NhTafMTMWWFqkIHZM+AStiMAHpg==;EndpointSuffix=core.windows.net",
         "Link": "https://localhost:44352"
       }
     }

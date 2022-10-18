@@ -28,9 +28,9 @@ namespace ShiftWorx.Models
         
         // location info
         [MaxLength(03)]
-        public string Latitude { get; set; }
+        public string? Latitude { get; set; }
         [MaxLength(03)]
-        public string Longitude { get; set; }
+        public string? Longitude { get; set; }
         public string Street { get; set; }
         public string City { get; set; }
         public string Province { get; set; }
@@ -49,8 +49,9 @@ namespace ShiftWorx.Models
 
         // uneditable (display only)
         [MaxLength(60)]
-        public string FactoryKey { get; set; }
-        public int fp_core_Id { get; set; }
+        public string? FactoryKey { get; set; }
+        public int? fp_core_Id { get; set; }
+        public int FP_Id => fp_core_Id.Value;
 
         public ICollection<Layout> Layouts { get; set; }
         public ICollection<Machine> Machines { get; set; }

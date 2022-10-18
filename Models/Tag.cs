@@ -10,6 +10,8 @@
         public string Name { get; set; }
         public TagType TagType { get; set; }
         public string Color { get; set; }
+
+        public int fp_core_id { get; set; }
     }
 
     public enum TagType

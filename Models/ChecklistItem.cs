@@ -15,7 +15,7 @@ namespace ShiftWorx.Models
         public string? UserNotes { get; set; }
  
         public bool IsRuleEnabled { get; set; }
-        public ChecklistRule? Rule { get; set; }
+        public ChecklistItemRule? Rule { get; set; }
         [ForeignKey ("Rule")]
         public int? RuleId { get; set; }
 
@@ -45,6 +45,8 @@ namespace ShiftWorx.Models
         public int? SelectedOptionId { get; set; }
 
         public int? ChecklistId { get; set; }
+
+        public virtual ICollection<FileAttachment> FileAttachments { get; set; }
 
         public int fp_core_id { get; set; }
 

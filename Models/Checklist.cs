@@ -48,6 +48,7 @@
         public int? DataSourceTagId { get; set; }
 
         public virtual ICollection<ChecklistSection> Sections { get; set; }
+        public virtual ICollection<FileAttachment> FileAttachments { get; set; }
 
         public int fp_core_id { get; set; }
     }

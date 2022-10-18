@@ -1,5 +1,6 @@
 ﻿@using ShiftWorx.Components.Methods
 @using ShiftWorx.Components.Responses
+@using System.ComponentModel.DataAnnotations
 @inject FpData _context;
 <MudCard>
     <MudCardHeader>
@@ -12,25 +13,31 @@
         </CardHeaderContent>
     </MudCardHeader>
     <MudCardContent>
-        @foreach (var item in ClockedInUsers.data)
+        @if (ClockedInUsers is not null)
+        {
+           foreach (var item in ClockedInUsers.data)
         {
             if (item.is_attached == 1)
             {
                 <ClockInTimeCounter Parent=this JobId="@item.id.ToString()" AttachedTime="@item.current_attachments.First().attached_at" Name="@item.display_name"></ClockInTimeCounter>
             }
+        } 
         }
+        
     </MudCardContent>
 </MudCard>
 @code {
     UserSimplifiedResponse ClockedInUsers;
-
+   
+    [Parameter,EditorRequired]
+    public string FpId { get; set; }
     protected override async Task OnInitializedAsync()
     {
-        GetClockedInUsers();
+        await GetClockedInUsers();
     }
     public async Task GetClockedInUsers()
     {
-        await _context.GetSimplifiedUser("9769");
+       ClockedInUsers = await _context.GetSimplifiedUser(FpId);
         StateHasChanged();
     }
     public void RefreshState()

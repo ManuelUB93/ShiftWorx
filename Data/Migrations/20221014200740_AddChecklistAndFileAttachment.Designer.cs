@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ShiftWorx.Data;
 
@@ -11,9 +12,10 @@ using ShiftWorx.Data;
 namespace ShiftWorx.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221014200740_AddChecklistAndFileAttachment")]
+    partial class AddChecklistAndFileAttachment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -427,45 +429,6 @@ namespace ShiftWorx.Migrations
                     b.ToTable("ChecklistItem");
                 });
 
-            modelBuilder.Entity("ShiftWorx.Models.ChecklistItemRule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("CriteriaValue")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("CriteriaValue2")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCritical")
-                        .HasColumnType("bit");
-
-                    b.Property<int?>("TemplateId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TemplateId");
-
-                    b.ToTable("ChecklistItemRule");
-                });
-
             modelBuilder.Entity("ShiftWorx.Models.ChecklistItemSelector", b =>
                 {
                     b.Property<int>("Id")
@@ -537,6 +500,45 @@ namespace ShiftWorx.Migrations
                     b.HasIndex("ChecklistItemSelectorId");
 
                     b.ToTable("ChecklistItemSelectorOption");
+                });
+
+            modelBuilder.Entity("ShiftWorx.Models.ChecklistRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("CriteriaValue")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("CriteriaValue2")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCritical")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("TemplateId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TemplateId");
+
+                    b.ToTable("ChecklistRule");
                 });
 
             modelBuilder.Entity("ShiftWorx.Models.ChecklistSection", b =>
@@ -778,40 +780,6 @@ namespace ShiftWorx.Migrations
                     b.ToTable("ChecklistTemplateItem");
                 });
 
-            modelBuilder.Entity("ShiftWorx.Models.ChecklistTemplateItemRule", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("CriteriaValue")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("CriteriaValue2")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsCritical")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ChecklistTemplateItemRule");
-                });
-
             modelBuilder.Entity("ShiftWorx.Models.ChecklistTemplateItemSelector", b =>
                 {
                     b.Property<int>("Id")
@@ -928,6 +896,40 @@ namespace ShiftWorx.Migrations
                     b.HasIndex("OperationId");
 
                     b.ToTable("ChecklistTemplateOperation");
+                });
+
+            modelBuilder.Entity("ShiftWorx.Models.ChecklistTemplateRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("CriteriaValue")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("CriteriaValue2")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCritical")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ChecklistTemplateRule");
                 });
 
             modelBuilder.Entity("ShiftWorx.Models.ChecklistTemplateSection", b =>
@@ -2557,7 +2559,7 @@ namespace ShiftWorx.Migrations
                         .WithMany("Items")
                         .HasForeignKey("ChecklistTemplateSectionId");
 
-                    b.HasOne("ShiftWorx.Models.ChecklistItemRule", "Rule")
+                    b.HasOne("ShiftWorx.Models.ChecklistRule", "Rule")
                         .WithMany()
                         .HasForeignKey("RuleId");
 
@@ -2590,15 +2592,6 @@ namespace ShiftWorx.Migrations
                     b.Navigation("Template");
                 });
 
-            modelBuilder.Entity("ShiftWorx.Models.ChecklistItemRule", b =>
-                {
-                    b.HasOne("ShiftWorx.Models.ChecklistTemplateItemRule", "Template")
-                        .WithMany()
-                        .HasForeignKey("TemplateId");
-
-                    b.Navigation("Template");
-                });
-
             modelBuilder.Entity("ShiftWorx.Models.ChecklistItemSelectorOption", b =>
                 {
                     b.HasOne("ShiftWorx.Models.ChecklistItemSelector", "ChecklistItemSelector")
@@ -2608,6 +2601,15 @@ namespace ShiftWorx.Migrations
                         .IsRequired();
 
                     b.Navigation("ChecklistItemSelector");
+                });
+
+            modelBuilder.Entity("ShiftWorx.Models.ChecklistRule", b =>
+                {
+                    b.HasOne("ShiftWorx.Models.ChecklistTemplateRule", "Template")
+                        .WithMany()
+                        .HasForeignKey("TemplateId");
+
+                    b.Navigation("Template");
                 });
 
             modelBuilder.Entity("ShiftWorx.Models.ChecklistSection", b =>
@@ -2678,7 +2680,7 @@ namespace ShiftWorx.Migrations
 
             modelBuilder.Entity("ShiftWorx.Models.ChecklistTemplateItem", b =>
                 {
-                    b.HasOne("ShiftWorx.Models.ChecklistTemplateItemRule", "Rule")
+                    b.HasOne("ShiftWorx.Models.ChecklistTemplateRule", "Rule")
                         .WithMany()
                         .HasForeignKey("RuleId");
 

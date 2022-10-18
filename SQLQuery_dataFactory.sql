@@ -763,3 +763,14 @@ insert dbo.ReportDefinitionStatusCode
 			on rd.fp_core_id = fp.report_id
 			inner join dbo.StatusCode as m
 			on m.fp_core_Id = fp.job_id
+
+-- insert into checklist
+--insert dbo.Checklist
+--	([NAME], Decscription, TemplateId, CompanyId, IsWorkorder, WorkInstructions,
+--	ActiveOn, StartedOn, AssignedOn, DueOn, CompletedOn,
+--	EnabledColumns, EnabledCustomColumns, UnlockedColumns, [Status], HasFailed,
+--	MachineId, JobId, OperationId, CreatedAt,
+--	Fp_Core_UserId, Fp_Core_RoleId, UserTagId, DataSourceTagId,
+--	[fp_core_id], [CreatedAt], [UpdatedAt], [DeletedAt])
+
+--	select 
